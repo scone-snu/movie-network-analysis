@@ -21,15 +21,11 @@ from selenium import webdriver
 import sys
 import csv
 import re
-
 import pandas as pd
-
-import codecs # For Korean
 
 # =================================== #
 # Korean Movie Data Scraper (Crawler) #
 # =================================== #
-
 
 def load_data(filepath):
     data = []
@@ -40,7 +36,6 @@ def load_data(filepath):
     except:
         print("Error: loading data")
     return data
-
 
 def main():
 
@@ -53,22 +48,19 @@ def main():
     # Visit the web page
     driver.get("http://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieList.do")
 
-
+    # Path
     input_path = "./data/movie_title_director.csv" # Relative Path
-    # output_path = "./data/movie_actor.csv"
+    output_path = "./out/movie_actor.csv"
 
     movies = load_data(input_path)
-    # ouput_file = open(output_path, 'wb')
-    # ouput_file = codecs.open(output_path, 'w', 'utf-8')
-
     movie_actor_df = pd.DataFrame(columns=['index', 'movie', 'director', 'lead_role', 'supp_role'], index=None)
 
     index = 0;
     for movie in movies:
         index = index + 1;
-        print("------------------------------------")
+        print("------------------------------------------")
         print(index, " ", movie[1], " ", movie[2])
-        print("------------------------------------")
+        print("------------------------------------------")
 
         movie_title = movie[1]
         director_name = movie[2]
@@ -84,7 +76,7 @@ def main():
         # Casting
         sections = driver.find_elements_by_xpath("//*[@class='peopContTable']")
 
-        print("-------------------------")
+        print("---------------------------------")
 
         # Casting
         lead_role = []
@@ -99,8 +91,8 @@ def main():
             print(cell.text, " -> ", name)
 
         print(lead_role)
+        print("---------------------------------")
 
-        print("-------------------------")
         # Casting : supporting role
         for cell in sections[1].find_elements_by_tag_name("a"):
             name = cell.text
@@ -111,19 +103,12 @@ def main():
             print(cell.text, " -> ", name)
 
         print(supp_role)
-
-        print("-------------------------")
-
-        # Write to file
-        # row_output = str(index) + ', ' + movie[1] + ', ' + movie[2] + ', ' + str(lead_role) + ', ' + str(supp_role) + '\n'
-        # print(output_string)
-        # output_string = output_string.encode("utf-8")
-        # ouput_file.write(output_string)
+        print("---------------------------------")
 
         movie[1].replace(" ", "")
         movie[1].replace(",", "")
 
-        # Pandas
+        # Output using Pandas
         row_output = [index, movie[1], movie[2], lead_role, supp_role]
         movie_actor_df.loc[index] = row_output
 
@@ -132,11 +117,12 @@ def main():
         driver.find_elements_by_name('sMovName')[1].clear();
         driver.find_element_by_name('sDirector').clear();
 
-        # if index == 2:
+        # testing = True
+        # if testing == True and index == 3:
+        #     output_path = "./out/movie_actor_testing.csv"
         #     break;
 
-    movie_actor_df.to_csv('./data/movie_actor.csv',encoding='utf-16',index =False)
-    # ouput_file.close();
+    movie_actor_df.to_csv(output_path, encoding='utf-16',index =False)
 
 
 print("============="); print("    START    "); print("=============");
@@ -146,8 +132,6 @@ if __name__ == '__main__':
     # print(re.sub(r'\([^)]*\)', '', "최민식"))
     # print("최민식(이순신 )")
 print("============="); print("    E N D    "); print("=============");
-
-
 
 
 
