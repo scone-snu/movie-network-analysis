@@ -14,7 +14,6 @@ References:
 
 Notes:
     Selenium (Web Testing Tool) is used instead of BeautifulSoup (and Request) to feed the inputs.
-
 '''
 
 from selenium import webdriver
@@ -22,6 +21,8 @@ from selenium import webdriver
 import sys
 import csv
 import re
+
+import pandas as pd
 
 import codecs # For Korean
 
@@ -54,11 +55,13 @@ def main():
 
 
     input_path = "./data/movie_title_director.csv" # Relative Path
-    output_path = "./data/movie_actor.csv"
+    # output_path = "./data/movie_actor.csv"
 
     movies = load_data(input_path)
-    ouput_file = open(output_path, 'wb')
+    # ouput_file = open(output_path, 'wb')
     # ouput_file = codecs.open(output_path, 'w', 'utf-8')
+
+    movie_actor_df = pd.DataFrame(columns=['index', 'movie', 'director', 'lead_role', 'supp_role'], index=None)
 
     index = 0;
     for movie in movies:
@@ -88,27 +91,41 @@ def main():
         supp_role = []
 
         for cell in sections[0].find_elements_by_tag_name("a"):
-            print(cell.text)
-            lead_role.append(re.sub(r'\([^)]*\)', '', cell.text))
+            name = cell.text
+            name = re.sub(r'\([^)]*\)', '', name)
+            name = name.replace(" ", "")
+            name = name.replace(")", "")
+            lead_role.append(name)
+            print(cell.text, " -> ", name)
 
         print(lead_role)
 
         print("-------------------------")
         # Casting : supporting role
         for cell in sections[1].find_elements_by_tag_name("a"):
-            print(cell.text)
-            supp_role.append(re.sub(r'\([^)]*\)', '', cell.text))
+            name = cell.text
+            name = re.sub(r'\([^)]*\)', '', name)
+            name = name.replace(" ", "")
+            name = name.replace(")", "")
+            supp_role.append(name)
+            print(cell.text, " -> ", name)
 
         print(supp_role)
 
         print("-------------------------")
 
         # Write to file
+        # row_output = str(index) + ', ' + movie[1] + ', ' + movie[2] + ', ' + str(lead_role) + ', ' + str(supp_role) + '\n'
+        # print(output_string)
+        # output_string = output_string.encode("utf-8")
+        # ouput_file.write(output_string)
 
-        output_string = str(index) + ', ' + movie[1] + ', ' + movie[2] + ', ' + str(lead_role) + ', ' + str(supp_role) + '\n'
-        print(output_string)
-        output_string = output_string.encode("utf-8")
-        ouput_file.write(output_string)
+        movie[1].replace(" ", "")
+        movie[1].replace(",", "")
+
+        # Pandas
+        row_output = [index, movie[1], movie[2], lead_role, supp_role]
+        movie_actor_df.loc[index] = row_output
 
         # Close the current window
         driver.find_elements_by_xpath("//img[@alt='레이어 팝업 닫기']")[0].click()
@@ -118,8 +135,8 @@ def main():
         # if index == 2:
         #     break;
 
-    ouput_file.close();
-
+    movie_actor_df.to_csv('./data/movie_actor.csv',encoding='utf-16',index =False)
+    # ouput_file.close();
 
 
 print("============="); print("    START    "); print("=============");
